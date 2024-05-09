@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Files</title>
+</head>
+<body>
+    <h1>Uploaded Files</h1>
+    <ul>
+        {% for file in files %}
+            <li>{{ file.filename }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Go Back</a>
+</body>
+</html>
