@@ -9,17 +9,41 @@
 </head>
 <body>
   <div class="container">
-    <h1>Repozytorium plików</h1>
+    <h1 class="mt-4">Repozytorium plików</h1>
     <form method="POST" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
       <div class="form-group">
-        {{ form.file.label(class="form-label") }}
         {{ form.file(class="form-control-file") }}
       </div>
       <div class="form-group">
         {{ form.submit(class="btn btn-primary") }}
       </div>
     </form>
+    <hr>
+    <h2 class="mt-4">Lista plików</h2>
+    <table class="table table-striped mt-3">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Nazwa pliku</th>
+          <th scope="col">Akcje</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+          <tr>
+            <th scope="row">{{ file.id }}</th>
+            <td>{{ file.filename }}</td>
+            <td>
+              <a href="{{ url_for('download_file', file_id=file.id) }}" class="btn btn-primary btn-sm">Pobierz</a>
+              <form action="{{ url_for('delete_file', file_id=file.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Czy na pewno chcesz usunąć ten plik?');">Usuń</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </body>
 </html>

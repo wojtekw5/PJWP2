@@ -4,4 +4,4 @@ db = SQLAlchemy()
 
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    filename = db.Column(db.Integer, unique=True, nullable=False)
+    filename = db.Column(db.String(120), unique=True, nullable=False)
