@@ -47,6 +47,7 @@
             <td>
               <a href="{{ url_for('download_file', file_id=file.id) }}" class="btn btn-primary btn-sm">Pobierz</a>
               <form action="{{ url_for('delete_file', file_id=file.id) }}" method="POST" style="display:inline;">
+                {{ form.csrf_token }}  <!-- Ensure the CSRF token is properly included as a hidden input -->
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Czy na pewno chcesz usunąć ten plik?');">Usuń</button>
               </form>
             </td>

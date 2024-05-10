@@ -1,4 +1,3 @@
-import bcrypt
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
@@ -8,7 +7,6 @@ from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
-import uuid
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from wtforms.fields.simple import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
@@ -27,6 +25,14 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# Ensure the upload folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Ensure the instance folder exists
+if not os.path.exists(os.path.join(app.root_path, 'instance')):
+    os.makedirs(os.path.join(app.root_path, 'instance'))
+
 # Model User
 class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
@@ -41,9 +47,11 @@ class User(UserMixin, db.Model):
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(120), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
 
-    def __init__(self, filename):
+    def __init__(self, filename, user_id):
         self.filename = filename
+        self.user_id = user_id
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -93,16 +101,14 @@ def home():
         file.save(file_path)
 
         # Add new file entry to the database
-        new_file = File(filename=unique_filename)
+        new_file = File(filename=unique_filename, user_id=current_user.get_id())
         db.session.add(new_file)
         db.session.commit()
 
-        flash('File uploaded successfully', 'success')
-        app.logger.info(f'File {unique_filename} uploaded successfully.')
         return redirect(url_for('home'))
 
-    # Retrieve all files from the database
-    files = File.query.all()
+    # Retrieve all files for the current user from the database
+    files = File.query.filter_by(user_id=current_user.get_id()).all()
     return render_template('index.html', form=form, files=files)
 
 @app.route('/login', methods=["GET", "POST"])
@@ -111,10 +117,8 @@ def login():
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-        app.logger.info(f'Attempting login for email: {email}')
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
-            app.logger.info('Login successful')
             login_user(user)
             return redirect(url_for('home'))
         else:
@@ -137,41 +141,38 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             flash('Rejestracja zakończona sukcesem!', 'success')
-            app.logger.info(f'User {username} registered successfully.')
             return redirect(url_for('login'))
         except IntegrityError as e:
             db.session.rollback()
-            app.logger.error(f'Error registering user {username}: {str(e)}')
             if 'UNIQUE constraint failed: user.username' in str(e.orig):
                 flash('Nazwa użytkownika jest już zajęta. Wybierz inną.', 'danger')
             elif 'UNIQUE constraint failed: user.email' in str(e.orig):
                 flash('Adres email jest już używany. Użyj innego.', 'danger')
 
-    else:
-        app.logger.info(f'Form validation failed: {form.errors}')
+
     return render_template('register.html', form=form)
 
 @app.route('/download/<file_id>')
 @login_required
 def download_file(file_id):
     file = File.query.get_or_404(file_id)
+    if file.user_id != current_user.get_id():
+        return redirect(url_for('home'))
     return send_from_directory(app.config['UPLOAD_FOLDER'], file.filename, as_attachment=True)
 
 @app.route('/delete/<file_id>', methods=["POST"])
 @login_required
 def delete_file(file_id):
     file = File.query.get_or_404(file_id)
+    if file.user_id != current_user.get_id():
+        return redirect(url_for('home'))
     try:
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
     except Exception as e:
-        flash(f'Error deleting file: {str(e)}', 'danger')
-        app.logger.error(f'Error deleting file {file.filename}: {str(e)}')
         return redirect(url_for('home'))
 
     db.session.delete(file)
     db.session.commit()
-    flash('File deleted successfully', 'success')
-    app.logger.info(f'File {file.filename} deleted successfully.')
     return redirect(url_for('home'))
 
 @app.route('/logout')
