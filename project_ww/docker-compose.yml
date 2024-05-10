@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./instance:/app/instance
+    environment:
+      - UPLOAD_FOLDER=/app/uploads
+      - DATABASE_URL=sqlite:///app/instance/file_repository.db
+      - FLASK_APP=app.py
