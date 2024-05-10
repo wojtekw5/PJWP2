@@ -74,7 +74,7 @@ class LoginForm(FlaskForm):
 # Formularz przesyłania plików
 class UploadFileForm(FlaskForm):
     file = FileField("File")
-    submit = SubmitField("Upload File!")
+    submit = SubmitField("Zapisz plik!")
 
 @app.route('/', methods=["GET", "POST"])
 @app.route('/home', methods=["GET", "POST"])
