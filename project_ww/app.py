@@ -1,5 +1,8 @@
+import bcrypt
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_wtf import FlaskForm
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash
 from wtforms import FileField, SubmitField
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -23,6 +26,12 @@ class File(db.Model):
     def __init__(self, filename):
         self.filename = filename
 
+class User(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+
 class UploadFileForm(FlaskForm):
     file = FileField("File")
     submit = SubmitField("Upload File!")
@@ -31,6 +40,7 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Hasło', validators=[DataRequired()])
     submit = SubmitField('Zaloguj się')
+
 
 @app.route('/', methods=["GET", "POST"])
 @app.route('/home', methods=["GET", "POST"])
@@ -89,10 +99,30 @@ def login():
 
 @app.route('/register', methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        # Process registration details here
-        flash('Registration successful!', 'success')
-        return redirect(url_for('home'))
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        if password != confirm_password:
+            flash('Hasła muszą być identyczne.', 'danger')
+            return redirect(url_for('register'))
+
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        new_user = User(username=username, email=email, password=hashed_password)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
+        except IntegrityError as e:
+            db.session.rollback()
+            if 'UNIQUE constraint failed: user.username' in str(e.orig):
+                flash('Nazwa użytkownika jest już zajęta. Wybierz inną.', 'danger')
+            elif 'UNIQUE constraint failed: user.email' in str(e.orig):
+                flash('Adres email jest już używany. Użyj innego.', 'danger')
+
     return render_template('register.html')
 
 @app.route('/download/<file_id>')
