@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rejestracja</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    .narrow-container {
+      width: 50%;
+      margin: 0 auto;
+    }
+    .narrow-form-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .form-control {
+      width: 50%;
+    }
+    .btn-primary {
+      width: 50%;
+      margin-top: 10px;
+    }
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="narrow-container">
+      <h2>Rejestracja</h2>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="alert alert-dismissible" role="alert">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <form method="POST" action="{{ url_for('register') }}">
+        {{ form.hidden_tag() }} <!-- Dodanie CSRF token -->
+        <div class="form-group narrow-form-group">
+          <label for="username">Nazwa użytkownika:</label>
+          {{ form.username(id='username', class_='form-control') }}
+          {% if form.username.errors %}
+            <div class="alert alert-danger">
+              {% for error in form.username.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="form-group narrow-form-group">
+          <label for="email">Email:</label>
+          {{ form.email(id='email', class_='form-control') }}
+          {% if form.email.errors %}
+            <div class="alert alert-danger">
+              {% for error in form.email.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="form-group narrow-form-group">
+          <label for="password">Hasło:</label>
+          {{ form.password(id='password', class_='form-control') }}
+          {% if form.password.errors %}
+            <div class="alert alert-danger">
+              {% for error in form.password.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="form-group narrow-form-group">
+          <label for="confirm_password">Potwierdź hasło:</label>
+          {{ form.confirm_password(id='confirm_password', class_='form-control') }}
+          {% if form.confirm_password.errors %}
+            <div class="alert alert-danger">
+              {% for error in form.confirm_password.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="form-group narrow-form-group">
+          <button type="submit" class="btn btn-primary">Zarejestruj się</button>
+        </div>
+        <div class="form-group narrow-form-group">
+          <a href="{{ url_for('login') }}" class="btn btn-light" role="button">Powrót</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      setTimeout(function() {
+        $(".alert").alert('close');
+      }, 5000); // wygaśnięcie komunikatu
+    });
+  </script>
+</body>
+</html>

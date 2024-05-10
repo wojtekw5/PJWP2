@@ -1,1 +1,8 @@
-flask
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-WTF
+Flask-Login
+Werkzeug
+WTForms
+email_validator
