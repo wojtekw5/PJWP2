@@ -55,7 +55,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Hasło', validators=[DataRequired()])
     submit = SubmitField('Zaloguj się')
 
-# Formularz przeyłania plików
+# Formularz przesyłania plików
 class UploadFileForm(FlaskForm):
     file = FileField("File")
     submit = SubmitField("Zapisz plik!")
