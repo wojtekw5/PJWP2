@@ -8,6 +8,16 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <span class="navbar-text">
+      Zalogowano jako: {{ current_user.username }}
+    </span>
+    <div class="collapse navbar-collapse justify-content-end">
+      <form class="form-inline" action="{{ url_for('logout') }}" method="GET">
+        <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Wyloguj</button>
+      </form>
+    </div>
+  </nav>
   <div class="container">
     <h1 class="mt-4">Repozytorium plików</h1>
     <form method="POST" enctype="multipart/form-data">

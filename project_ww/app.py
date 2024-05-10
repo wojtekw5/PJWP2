@@ -1,5 +1,5 @@
 import bcrypt
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -116,14 +116,10 @@ def login():
         if user and check_password_hash(user.password, password):
             app.logger.info('Login successful')
             login_user(user)
-            flash('Zalogowano pomyślnie!', 'success')
             return redirect(url_for('home'))
         else:
-            app.logger.warning('Login failed: Invalid email or password')
             flash('Błędny email lub hasło.', 'danger')
-    else:
-        # Logowanie błędów walidacji
-        app.logger.info(f'Form validation failed: {form.errors}')
+
     return render_template('login.html', form=form)
 
 @app.route('/register', methods=["GET", "POST"])
