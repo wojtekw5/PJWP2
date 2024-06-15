@@ -31,7 +31,7 @@ login_manager.login_view = 'login'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-# Ensure the instance folder exists
+# Ensure the instance folder exist
 if not os.path.exists(os.path.join(app.root_path, 'instance')):
     os.makedirs(os.path.join(app.root_path, 'instance'))
 
